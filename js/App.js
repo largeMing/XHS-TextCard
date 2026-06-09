@@ -32,7 +32,6 @@ class App {
             this.initElements();
             this.bindEvents();
             this.loadTemplates();
-            this.setDefaultText();
             this.restoreEditMode();
         } catch (error) {
             console.error('[App] Initialization failed:', error);
@@ -103,7 +102,15 @@ class App {
             hasCoverCheck: document.getElementById('has-cover'),
             coverTitleInput: document.getElementById('cover-title'),
             coverFontSizeInput: document.getElementById('cover-font-size'),
-            editModeToggle: document.getElementById('edit-mode-toggle')
+            editModeToggle: document.getElementById('edit-mode-toggle'),
+            aiFormatBtn: document.getElementById('ai-format-btn'),
+            aiSettingsToggle: document.getElementById('ai-settings-toggle'),
+            aiSettingsPanel: document.getElementById('ai-settings-panel'),
+            aiBaseUrl: document.getElementById('ai-base-url'),
+            aiApiKey: document.getElementById('ai-api-key'),
+            aiModel: document.getElementById('ai-model'),
+            aiApiFormat: document.getElementById('ai-api-format'),
+            aiSaveConfig: document.getElementById('ai-save-config')
         };
 
         this.downloadManager.setLoadingElement(this.elements.loading);
@@ -150,22 +157,115 @@ class App {
         if (this.elements.editModeToggle) {
             this.elements.editModeToggle.addEventListener('click', () => this.toggleEditMode());
         }
+
+        if (this.elements.aiFormatBtn) {
+            this.elements.aiFormatBtn.addEventListener('click', () => this.runAiFormat());
+        }
+        if (this.elements.aiSettingsToggle) {
+            this.elements.aiSettingsToggle.addEventListener('click', () => this.toggleAiSettings());
+        }
+        if (this.elements.aiSaveConfig) {
+            this.elements.aiSaveConfig.addEventListener('click', () => this.saveAiConfig());
+        }
     }
 
     toggleEditMode() {
         const body = document.body;
         const isEditMode = body.classList.toggle('edit-mode');
         const toggle = this.elements.editModeToggle;
-        
+
         if (toggle) {
             toggle.classList.toggle('active', isEditMode);
-            toggle.innerHTML = isEditMode 
-                ? '<i class="fas fa-compress-alt"></i>' 
+            toggle.innerHTML = isEditMode
+                ? '<i class="fas fa-compress-alt"></i>'
                 : '<i class="fas fa-expand-alt"></i>';
             toggle.title = isEditMode ? '退出专注模式' : '专注编辑模式';
         }
 
         localStorage.setItem('xhs_edit_mode', isEditMode ? 'true' : 'false');
+    }
+
+    toggleAiSettings() {
+        const panel = this.elements.aiSettingsPanel;
+        const btn = this.elements.aiSettingsToggle;
+        if (!panel) return;
+
+        const isVisible = panel.style.display !== 'none';
+        panel.style.display = isVisible ? 'none' : 'block';
+        btn && btn.classList.toggle('active', !isVisible);
+
+        // 打开时从 localStorage 回填已保存的配置
+        if (!isVisible) {
+            const formatter = new AiFormatter();
+            const cfg = formatter.getConfig();
+            if (this.elements.aiBaseUrl) this.elements.aiBaseUrl.value = cfg.baseUrl || '';
+            if (this.elements.aiApiKey) this.elements.aiApiKey.value = cfg.apiKey || '';
+            if (this.elements.aiModel) this.elements.aiModel.value = cfg.model || '';
+            if (this.elements.aiApiFormat) this.elements.aiApiFormat.value = cfg.apiFormat || 'openai';
+        }
+    }
+
+    saveAiConfig() {
+        const baseUrl = this.elements.aiBaseUrl?.value || '';
+        const apiKey = this.elements.aiApiKey?.value || '';
+        const model = this.elements.aiModel?.value || '';
+        const apiFormat = this.elements.aiApiFormat?.value || 'openai';
+
+        if (!baseUrl || !apiKey || !model) {
+            alert('请填写完整的 API 地址、Key 和模型名称');
+            return;
+        }
+
+        const formatter = new AiFormatter();
+        formatter.saveConfig(baseUrl, apiKey, model, apiFormat);
+
+        // 关闭面板并给用户反馈
+        if (this.elements.aiSettingsPanel) this.elements.aiSettingsPanel.style.display = 'none';
+        if (this.elements.aiSettingsToggle) this.elements.aiSettingsToggle.classList.remove('active');
+
+        const btn = this.elements.aiSaveConfig;
+        if (btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> 已保存';
+            setTimeout(() => { btn.innerHTML = original; }, 1500);
+        }
+    }
+
+    async runAiFormat() {
+        const text = this.elements.textInput?.value?.trim();
+        if (!text) {
+            alert('请先输入文字内容');
+            return;
+        }
+
+        const formatter = new AiFormatter();
+        if (!formatter.isConfigured()) {
+            alert('请先配置 API Key 和地址（点击右侧齿轮图标）');
+            // 自动展开设置面板
+            if (this.elements.aiSettingsPanel?.style.display === 'none') {
+                this.toggleAiSettings();
+            }
+            return;
+        }
+
+        const btn = this.elements.aiFormatBtn;
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 排版中...';
+        }
+
+        try {
+            const result = await formatter.format(text);
+            this.elements.textInput.value = result;
+            this.schedulePreview(0);
+        } catch (err) {
+            alert(`AI 排版失败：${err.message}`);
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic"></i> AI 智能排版';
+            }
+        }
     }
 
     updateActiveIndicator() {
