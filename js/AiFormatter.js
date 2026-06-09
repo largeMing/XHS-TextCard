@@ -74,6 +74,7 @@ class AiFormatter {
         const body = JSON.stringify({
             model,
             max_tokens: 4096,
+            thinking: { type: 'disabled' },
             system: AiFormatter.SYSTEM_PROMPT,
             messages: [{ role: 'user', content: text }]
         });

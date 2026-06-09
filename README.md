@@ -209,7 +209,7 @@ templates/
 ## 📋 版本信息
 
 - **当前版本**：v1.4 Open Source Edition
-- **作者**：[@geekfoxcharlie](https://github.com/geekfoxcharlie) (小红书: 极客狐)
+- **作者**：[@geekfoxcharlie](https://github.com/geekfoxcharlie) (小红书: )
 - **协议**：MIT License
 - **官方在线版**：[https://xhs-textcard.site/](https://xhs-textcard.site/)
 - **最后更新**：2026年5月
@@ -241,7 +241,7 @@ templates/
 - **GitHub**：[@geekfoxcharlie](https://github.com/geekfoxcharlie)
 - **官方在线版**：[https://xhs-textcard.site/](https://xhs-textcard.site/)
 - **Email**：geekfoxcharlie@gmail.com
-- **小红书**：极客狐
+- **小红书**：
 
 ---
 

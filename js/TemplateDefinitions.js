@@ -383,9 +383,6 @@ const TemplateDefinitions = {
             ctx.fillText('完成', width - 25, 35); ctx.textAlign = 'left';
             ctx.beginPath(); ctx.strokeStyle = iosOrange; ctx.lineWidth = 2.5; ctx.moveTo(25, 33); ctx.lineTo(18, 26); ctx.lineTo(25, 19); ctx.stroke();
             ctx.fillText('备忘录', 32, 35);
-            const now = new Date();
-            const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            ctx.fillStyle = '#8E8E93'; ctx.font = '500 12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText(dateStr, width / 2, 35);
             ctx.restore();
 
             // 如果社交图标底部居中，页码稍微右移避开
